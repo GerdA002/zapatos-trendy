@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:dev.sqlite"
+}
+
+model Session {
+  id            String    @id
+  shop          String
+  state         String
+  isOnline      Boolean   @default(false)
+  scope         String?
+  expires       DateTime?
+  accessToken   String
+  userId        BigInt?
+  firstName     String?
+  lastName      String?
+  email         String?
+  accountOwner  Boolean   @default(false)
+  locale        String?
+  collaborator  Boolean?  @default(false)
+  emailVerified Boolean?  @default(false)
+}
+
+// =====================
+// MODELS FOR SHOE STORE
+// =====================
+
+model SizeChart {
+  id        Int      @id @default(autoincrement())
+  brand     String   @unique
+  sizes     String   // JSON string of available sizes
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ShoeCollection {
+  id          Int      @id @default(autoincrement())
+  handle      String   @unique
+  title       String
+  description String?
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  products ShoeProduct[]
+}
+
+model ShoeProduct {
+  id          Int           @id @default(autoincrement())
+  title       String
+  handle      String        @unique
+  description String?
+  productType String        @default("Shoes")
+  brand       String
+  gender      String?       // "men", "women", "unisex"
+  material    String?
+  featured    Boolean       @default(false)
+  trending    Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  variants    ShoeVariant[]
+  images      ShoeImage[]
+  collections ShoeCollection[]
+}
+
+model ShoeVariant {
+  id        Int     @id @default(autoincrement())
+  size      String
+  color     String
+  colorHex  String?  // Hex color code
+  price     Float
+  sku       String  @unique
+  inventory Int     @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  product   ShoeProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId Int
+}
+
+model ShoeImage {
+  id        Int     @id @default(autoincrement())
+  url       String
+  altText   String?
+  position  Int     @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  product   ShoeProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId Int
+}
